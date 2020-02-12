@@ -14,6 +14,8 @@ class VisitorNotifier with ChangeNotifier {
   VisitorNotifier();
   Visitor visitor;
   String mySelection;
+  String mySelection1;
+  String mySelection2;
   var data = [];
   var users = List<User>();
   bool b = false;
@@ -36,6 +38,16 @@ class VisitorNotifier with ChangeNotifier {
   void changeOption(newVal) {
     mySelection = newVal;
     print(mySelection);
+    notifyListeners();
+  }
+
+    void changeTimeOption1( newVal){
+    mySelection1 = newVal;
+    notifyListeners();
+  }
+
+  changeTimeOption2(newVal){
+    mySelection2 = newVal;
     notifyListeners();
   }
 
@@ -73,11 +85,11 @@ class VisitorNotifier with ChangeNotifier {
           message: "We need to know who you're here to see", key: scaffoldKey);
       return;
     }
-
+    String appointment = mySelection1 + ":"+ mySelection2;
     displayProgressDialog(context);
 
     bool success = await VisitorService.signIn(
-            name.text, address.text, phone.text, purpose.text, mySelection)
+            name.text, address.text, phone.text, purpose.text, appointment,mySelection)
         .whenComplete(() {});
     clearTextFields();
     closeProgressDialog(context);
@@ -140,6 +152,7 @@ class VisitorNotifier with ChangeNotifier {
                                   VisitorSignIn()),
                           (Route route) => route == null);
                     }
+                    notifyListeners();
                   }),
             ],
           );

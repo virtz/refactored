@@ -63,7 +63,7 @@ class LandingPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(15)),
                         height: size.height / 11,
                         color: Colors.white,
-                        minWidth: size.width - 50,
+                       minWidth: size.width - 50,
                         onPressed: () =>usernotifier.checkSignedIn(context),
                         child: Text(
                           'Employee ?',
@@ -85,9 +85,7 @@ class LandingPage extends StatelessWidget {
                         color: Colors.white,
                         minWidth: size.width - 50,
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  VisitorSignIn()));    Navigator.of(context).push(MaterialPageRoute(
+                      Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) =>
                                   VisitorSignIn()));
                         },

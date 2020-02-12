@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:provider_demo/notifiers/user_notifier.dart';
 
@@ -20,6 +19,22 @@ class _NotificationsState extends State<Notifications> {
         title: Text('Notifications'),
         centerTitle: true,
         backgroundColor: Colors.white,
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left:4.0,right:4.0),
+            child: IconButton(
+              onPressed: ()=>usernotifier.openSearch(context),
+              icon: Icon(Icons.search),
+            ),
+          ),
+            Padding(
+              padding: const EdgeInsets.only(left:4.0,right: 8.0),
+              child: IconButton(
+              onPressed: ()=>usernotifier.openSettings(context),
+              icon: Icon(Icons.settings),
+          ),
+            ),
+        ],
       ),
       body: Container(
         child: FutureBuilder(
@@ -45,7 +60,7 @@ class _NotificationsState extends State<Notifications> {
                             borderRadius: BorderRadius.circular(5.0)),
                         elevation: 1.5,
                         child: ListTile(
-                          onTap: () {},
+                          onTap: () =>userNotifier.openDetails(context, index),
                           leading: Text(usernotifier.visitors[index].name,
                               style: TextStyle(
                                   fontSize: 15.0, fontWeight: FontWeight.w700)),
@@ -60,19 +75,19 @@ class _NotificationsState extends State<Notifications> {
               );
             }),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => usernotifier.signoutDialogue(
-            context,
-            'You want to sign out ?',
-            "Sign Out",
-            size.height / 2.5,
-            "assets/images/thought.png"),
-        backgroundColor: Theme.of(context).primaryColor,
-        child: Icon(
-          Icons.exit_to_app,
-          color: Colors.black,
-        ),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => usernotifier.signoutDialogue(
+      //       context,
+      //       'You want to sign out ?',
+      //       "Sign Out",
+      //       size.height / 2.5,
+      //       "assets/images/thought.png"),
+      //   backgroundColor: Theme.of(context).primaryColor,
+      //   child: Icon(
+      //     Icons.exit_to_app,
+      //     color: Colors.black,
+      //   ),
+      // ),
     );
   }
 

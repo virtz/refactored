@@ -2,17 +2,30 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider_demo/models/user.dart';
 import 'package:provider_demo/models/visitor.dart';
 import 'package:provider_demo/services/api.dart';
+import 'package:provider_demo/services/debouncer.dart';
+import 'package:provider_demo/services/visitorService.dart';
+import 'package:provider_demo/ui/detail.dart';
 import 'package:provider_demo/ui/employee_login.dart';
+import 'package:provider_demo/ui/employee_signup.dart';
 import 'package:provider_demo/ui/notifications.dart';
+import 'package:provider_demo/ui/search.dart';
+import 'package:provider_demo/ui/settings.dart';
 
 import 'package:provider_demo/utils/tools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserNotifier with ChangeNotifier {
+  //variables
   bool isAdmin = false;
   var visitors = List<Visitor>();
+  var users = List<User>();
+  String mySelection;
+  String mySelection1;
+  //text editing controllers
+
   TextEditingController name = TextEditingController();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
@@ -21,8 +34,28 @@ class UserNotifier with ChangeNotifier {
   TextEditingController eemail = TextEditingController();
   TextEditingController epassword = TextEditingController();
   int vague = 0;
+
+  //scaffold keys
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final escaffoldKey = GlobalKey<ScaffoldState>();
+  final scaffoldKey1 = GlobalKey<ScaffoldState>();
+  final scaffoldKey2 = GlobalKey<ScaffoldState>();
+
+//other variables
+  List<Visitor> visitors1 = List<Visitor>();
+  List<Visitor> filteredList = List();
+  final debouncer = Debouncer(milliseconds: 500);
+  TextEditingController filter = new TextEditingController();
+  TextEditingController chnStatus = new TextEditingController();
+
+//user variables
+  String name1;
+  String email1;
+  String id;
+  String status;
+  String isAdmin1;
+  bool switchOn = true;
+  bool isLoading = true;
 
   onChange(val) {
     isAdmin = val;
@@ -97,12 +130,14 @@ class UserNotifier with ChangeNotifier {
     name.text = "";
     email.text = "";
     password.text = "";
+    notifyListeners();
   }
 
   clearTextField2() {
     eemail.text = "";
     epassword.text = "";
     ename.text = "";
+    notifyListeners();
   }
 
   signIn(BuildContext context) async {
@@ -157,12 +192,14 @@ class UserNotifier with ChangeNotifier {
                 child: Text("Cancel", style: TextStyle(color: Colors.black)),
                 onPressed: () {
                   Navigator.of(context).pop();
+                  notifyListeners();
                 },
               ),
               FlatButton(
                   child: Text("Ok", style: TextStyle(color: Colors.black)),
                   onPressed: () async {
                     Navigator.of(context).pop();
+                    notifyListeners();
                   }),
             ],
           );
@@ -223,7 +260,8 @@ class UserNotifier with ChangeNotifier {
                 },
               ),
               FlatButton(
-                  child: Text("Yes, Continue", style: TextStyle(color: Colors.black)),
+                  child: Text("Yes, Continue",
+                      style: TextStyle(color: Colors.black)),
                   onPressed: () async {
                     SharedPreferences prefs =
                         await SharedPreferences.getInstance();
@@ -234,8 +272,241 @@ class UserNotifier with ChangeNotifier {
                         MaterialPageRoute(
                             builder: (BuildContext context) => EmployeeLogin()),
                         (Route route) => route == null);
-                  notifyListeners();
+                    notifyListeners();
                   }),
+            ],
+          );
+        });
+  }
+
+  openSearch(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext contex) => Search()));
+  }
+
+  openDetails(BuildContext context, int index) {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) => Detail(
+              id: visitors[index].id.toString(),
+              name: visitors[index].name,
+              address: visitors[index].address,
+              phone: visitors[index].phone,
+              purpose: visitors[index].purpose,
+              appointmentTime: visitors[index].appoinmentTime,
+              who: visitors[index].who,
+              timeIn: visitors[index].timeIn,
+            )));
+    print(visitors[index].appoinmentTime);
+    notifyListeners();
+  }
+
+  // deleteVisitor(String id){
+
+  // }
+
+  acceptRequest(BuildContext context, String id, String name) {
+    String status = "Accepted";
+    Api.updateVisitorStats(id, status, name).whenComplete(() {
+      Navigator.of(context).pop();
+      print(status);
+    }).catchError((e) => print(e));
+    notifyListeners();
+  }
+
+  declineRequest(BuildContext context, String id, String name) {
+    String status = "Declined";
+
+    Api.updateVisitorStats(id, status, name).whenComplete(() {
+      Navigator.of(context).pop();
+      print(status);
+    }).catchError((e) => print(e));
+
+    notifyListeners();
+  }
+
+  deleteVisitor(BuildContext context, String id) {
+    Api.deleteVisitor(id).whenComplete(() {
+      Navigator.of(context).pop();
+    }).catchError((e) => print(e));
+    notifyListeners();
+  }
+
+  search() {
+    Api.getVisitor2().then((visitorsfromServer) async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var who = prefs.getString('name');
+      var eWho = prefs.getString('eName');
+      visitors1 = visitorsfromServer
+          .where((i) => i.who == who || i.who == eWho)
+          .toList();
+      filteredList = visitors1;
+      notifyListeners();
+    });
+  }
+
+  searchOnchanged(String string) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var who = prefs.getString('name');
+    var eWho = prefs.getString('eName');
+    filteredList = visitors1
+        .where((u) =>
+            u.who == who ||
+            u.who == eWho &&
+                (u.name.toLowerCase().contains(string.toLowerCase()) ||
+                    u.timeIn.toLowerCase().contains(string.toLowerCase())))
+        .toList();
+    notifyListeners();
+  }
+
+  openSettings(BuildContext context) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (BuildContext context) => Settings()));
+    notifyListeners();
+  }
+
+  getUserCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    id = prefs.getString('id');
+    name1 = prefs.getString('eName');
+    email1 = prefs.getString('email');
+    status = prefs.getString('status');
+    isAdmin1 = prefs.getString('isAdmin');
+    isLoading = false;
+
+    notifyListeners();
+  }
+
+  changeStatuss() async {
+    bool a = await Api.updateStatus(id, chnStatus.text);
+    if (a == true) {
+      print("Update successfull");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('status', chnStatus.text);
+      prefs.setString('id', id);
+
+      status = prefs.getString('status');
+      notifyListeners();
+    } else {
+      print("An error occured");
+    }
+  }
+
+  changeStatusDialogue(BuildContext context, TextEditingController changeStatus,
+      String header, double height, String imageLnk) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            title: Center(child: Text(header)),
+            content: Container(
+              height: height,
+              child: Column(
+                children: <Widget>[
+                  Divider(),
+                  Expanded(child: Image.asset(imageLnk)),
+                  TextField(
+                    controller: changeStatus,
+                    decoration: InputDecoration(border: OutlineInputBorder()),
+                    textDirection: TextDirection.ltr,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 30.0)
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Cancel", style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  notifyListeners();
+                },
+              ),
+              FlatButton(
+                child: Text("Yes, Continue",
+                    style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  changeStatuss();
+                  Navigator.of(context).pop();
+                  notifyListeners();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  deleteMyAcct(BuildContext context) async {
+    bool a = await Api.deleteMyAcct(id);
+    print(id);
+    if (a == true) {
+      print('Account Deleted');
+      showSnackBar(message: "Your Account Has Been Deleted", key: scaffoldKey2);
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => EmployeeSign()),
+          (Route route) => route == null);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.remove('id');
+      prefs.remove('name');
+      prefs.remove('isAdmin');
+      prefs.remove('status');
+      prefs.remove('token');
+      prefs.remove('isLoggedin');
+
+      notifyListeners();
+    } else {
+      showSnackBar(message: "An Error Occurred", key: scaffoldKey2);
+    }
+  }
+
+  getUsers() {
+    VisitorService.getUsers().then((response) {
+      Iterable list = json.decode(response.body);
+      users = list.map((model) => User.fromJson(model)).toList();
+    });
+  }
+
+  deleteUser(BuildContext context, int index,String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var adminStatus = prefs.getString('isAdmin');
+    if (adminStatus == 'true') {
+      Api.deleteUser(id).whenComplete(() {
+        //Navigator.of(context).pop();
+      });
+    } else {
+      unabletoDelete(context, "You cannot delete this resource", "Unathorized",
+          300, "assets/images/no_notification.png");
+    }
+  }
+
+  unabletoDelete(BuildContext context, String message, String header,
+      double height, String imageLnk) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            title: Center(child: Text(header)),
+            content: Container(
+              height: height,
+              child: Column(
+                children: <Widget>[
+                  Divider(),
+                  Expanded(child: Image.asset(imageLnk)),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Ok", style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  notifyListeners();
+                },
+              ),
             ],
           );
         });

@@ -13,6 +13,7 @@ Visitor _$VisitorFromJson(Map<String, dynamic> json) {
       address: json['address'] as String,
       phone: json['phone'] as String,
       purpose: json['purpose'] as String,
+      appoinmentTime: json['appointment'] as String,
       who: json['who'] as String,
       timeIn: json['timeIn'] as String,
       status: json['status'] as String);
@@ -24,6 +25,7 @@ Map<String, dynamic> _$VisitorToJson(Visitor instance) => <String, dynamic>{
       'address': instance.address,
       'phone': instance.phone,
       'purpose': instance.purpose,
+      'appointment': instance.appoinmentTime,
       'who': instance.who,
       'timeIn': instance.timeIn,
       'status': instance.status

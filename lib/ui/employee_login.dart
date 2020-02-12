@@ -15,6 +15,7 @@ class _EmployeeLoginState extends State<EmployeeLogin> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       key:userNotifier.escaffoldKey,
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
         child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:provider_demo/notifiers/visitor_notifier.dart';
+import 'package:provider_demo/utils/appdata.dart';
+
 
 class VisitorSignIn extends StatefulWidget {
   @override
@@ -23,6 +25,7 @@ class _VisitorSignInState extends State<VisitorSignIn> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Container(
+         // key:RIKeys.riKey1,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -76,8 +79,68 @@ class _VisitorSignInState extends State<VisitorSignIn> {
                       height: size.height / 36,
                     ),
               
-                      
-                  
+                      //todo:appointment time
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                    Container(
+                        width: size.width/2.5,
+                       decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(12.0),
+                          color: Colors.white),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal:5.0),
+                        child: DropdownButtonHideUnderline(
+                          child:DropdownButton<String>(
+                            hint:Text('Appointment'),
+                            value: visitorNotifier.mySelection1,
+                            onChanged:visitorNotifier.changeTimeOption1,
+                            items: time.map((time){
+                              return DropdownMenuItem<String>(
+                                value:time.name,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(child: Text(time.name)),
+                                ),
+                              );
+                            }).toList(),
+                          ) ,
+                        ),
+                      ),
+                    ),
+                    Container(
+
+                      width: size.width/2.5,
+                       decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(12.0),
+                          color: Colors.white),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal:5.0),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                             hint:Text('Time'),
+                             value: visitorNotifier.mySelection2,
+                             onChanged: visitorNotifier.changeTimeOption2,
+                             items: time2.map((time2){
+                               return DropdownMenuItem<String>(
+                                 value: time2.name,
+                                 child: Padding(
+                                   padding: const EdgeInsets.all(8.0),
+                                   child: Center(child: Text(time2.name)),
+                                 ),
+                               );
+                             }).toList(),
+                          ),
+                        ),
+                      ),
+                    )
+                    ],
+                  ),
+                   SizedBox(
+                      height: size.height / 36,
+                    ),
                     Consumer<VisitorNotifier>(
                       builder: (context, visitorNotifier, child) => Container(
                         width: size.width - 30,
@@ -99,7 +162,7 @@ class _VisitorSignInState extends State<VisitorSignIn> {
                             }).toList(),
                             hint: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text('Select'),
+                              child: Text("Who you're here to see"),
                             ),
                             onChanged: visitorNotifier.changeOption,
                             value: visitorNotifier.mySelection,

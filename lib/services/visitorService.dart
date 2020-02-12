@@ -7,7 +7,7 @@ const baseUrl = "http://localhost:5000/api";
 
 class VisitorService{
   static Future<bool> signIn(String name, String address, String phone,
-      String purpose, String who) async {
+      String purpose, String appointmentTime ,String who) async {
         bool b;
     try {
       var url = "https://secret-savannah-28994.herokuapp.com/api/visitors";
@@ -19,6 +19,7 @@ class VisitorService{
           "address": address,
           "phone": phone,
           "purpose": purpose,
+          "appointment":appointmentTime,
           "who": who
         },
         options: Options(
@@ -27,7 +28,7 @@ class VisitorService{
       );
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('id', res.data['_id']);
-          prefs.setString('name', res.data['name']);
+          prefs.setString('visitorname', res.data['name']);
      
       print("Res ${res.data}");
       if (res.statusCode == 200) {
